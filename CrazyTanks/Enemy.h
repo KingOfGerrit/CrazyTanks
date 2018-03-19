@@ -2,9 +2,6 @@
 
 #include "Structures.h"
 
-#include <cstdlib>
-#include <ctime>
-
 class Enemy {
 public:
 	Enemy();

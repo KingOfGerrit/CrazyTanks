@@ -24,10 +24,12 @@ public:
 	void Setup();
 	void Setup(int _width, int _height);
 	void Draw();
+	void Input();
 	void Logic();
 	
 	void drawLine(Point p1, Point p2);
 	Point findOnMap(Point center, int radius, int i);
+	Enemy getEnemyByCoordinates(Point p);
 
 	void setGameOver(bool _gameOver) { gameOver = _gameOver; }
 	void addScore(int _addendum) { score += _addendum; }

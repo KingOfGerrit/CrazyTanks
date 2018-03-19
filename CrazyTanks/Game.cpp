@@ -50,7 +50,7 @@ void Game::Setup(int _width, int _height) {
 	map[player->getPointPlayer().y][player->getPointPlayer().x] = 2;
 
 	// Spawn enemy
-	int numberOfEnemy = rand() % 3 + 2;
+	int numberOfEnemy = rand() % 5 + 2;
 
 	for (size_t i = 0; i < numberOfEnemy; i++) {
 		bool check = false;
@@ -66,8 +66,8 @@ void Game::Setup(int _width, int _height) {
 		}
 	}
 
-	// Spawn generated walls
-	int numberOfWalls = rand() % 2 + 2;
+	// Spawn walls
+	int numberOfWalls = rand() % 3 + 2;
 
 	for (size_t i = 0; i < numberOfWalls; i++) {
 		bool check = false;
@@ -154,7 +154,27 @@ void Game::Draw() {
 				break;
 			case 3:
 				SetConsoleTextAttribute(hConsole, 4);
-				cout << 'E';
+
+				switch (getEnemyByCoordinates({ static_cast<int>(j), static_cast<int>(i) }).getDir())
+				{
+				case LEFT:
+					// ╣ <-code: 185
+					cout << (char)185;
+					break;
+				case RIGHT:
+					// ╠ <-code: 204
+					cout << (char)204;
+					break;
+				case UP:
+					// ╩ <-code: 202 
+					cout << (char)202;
+					break;
+				case DOWN:
+					// ╦ <-code: 203
+					cout << (char)203;
+					break;
+				}
+
 				break;
 			}
 		}
@@ -168,8 +188,95 @@ void Game::Draw() {
 	cout << "Time: " << clock() / 1000.0 << endl;
 }
 
-void Game::Logic() {
+void Game::Input() {
+	if (_kbhit()) {
+		// LEFT : -32 75
+		// RIGHT: -32 77
+		// UP   : -32 72
+		// DOWN : -32 80
+		// SPACE:  32
 
+		char c = _getch();
+
+		switch(c) {
+		case -32:
+
+			c = _getch();
+
+			switch (c)
+			{
+			case 75:
+				player->setDir(LEFT);
+				player->setMove(LEFT);
+				break;
+			case 77:
+				player->setDir(RIGHT);
+				player->setMove(RIGHT);
+				break;
+			case 72:
+				player->setDir(UP);
+				player->setMove(UP);
+				break;
+			case 80:
+				player->setDir(DOWN);
+				player->setMove(DOWN);
+				break;
+			}
+			break;
+		case 32:
+
+			break;
+		case 'x':
+			gameOver = true;
+			break;
+		}
+	}
+	else {
+		player->setMove(STOP);
+	}
+}
+
+void Game::Logic() {
+	// Player logic
+
+	Point p = player->getPointPlayer();
+
+	if (player->getMove() != STOP) {
+		switch (player->getMove())
+		{
+		case LEFT:
+			if (map[p.y][p.x - 1] == 0) {
+				player->setX(p.x - 1);
+				map[p.y][p.x] = 0;
+				map[p.y][p.x - 1] = 2;
+			}
+			break;
+		case RIGHT:
+			if (map[p.y][p.x + 1] == 0) {
+				player->setX(p.x + 1);
+				map[p.y][p.x] = 0;
+				map[p.y][p.x + 1] = 2;
+			}
+			
+			break;
+		case UP:
+			if (map[p.y - 1][p.x] == 0) {
+				player->setY(p.y - 1);
+				map[p.y][p.x] = 0;
+				map[p.y - 1][p.x] = 2;
+			}
+			
+			break;
+		case DOWN:
+			if (map[p.y + 1][p.x] == 0) {
+				player->setY(p.y + 1);
+				map[p.y][p.x] = 0;
+				map[p.y + 1][p.x] = 2;
+			}
+			
+			break;
+		}
+	}
 }
 
 void Game::drawLine(Point p1, Point p2) {
@@ -205,12 +312,18 @@ Point Game::findOnMap(Point center, int radius, int i) {
 	if (p.y < 1)
 		p.y = 1;
 
-	for (; p.y < center.y + radius; p.y++) {
-		for (int j = p.x; j < center.x + radius; j++) {
+	for (; p.y < center.y + radius; p.y++)
+		for (int j = p.x; j < center.x + radius; j++)
 			if (map[p.y][j] == i)
 				return f = { j, p.y };
-		}
-	}
 
 	return f;
+}
+
+Enemy Game::getEnemyByCoordinates(Point p) {
+	for (size_t i = 0; i < enemy.size(); i++)
+		if (enemy[i].getPointEnemy().x == p.x && enemy[i].getPointEnemy().y == p.y)
+			return enemy[i];
+
+	return Enemy(-1, -1);
 }
