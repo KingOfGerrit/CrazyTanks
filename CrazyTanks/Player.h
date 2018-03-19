@@ -2,7 +2,8 @@
 
 #include "Structures.h"
 
-class Player {
+class Player
+{
 public:
 	Player();
 	Player(int _x, int _y);

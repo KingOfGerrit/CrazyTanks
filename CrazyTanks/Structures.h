@@ -1,11 +1,21 @@
 #pragma once
 
-struct Point {
+struct Point
+{
 	int x;
 	int y;
 };
 
-enum eDirection {
+enum eTags
+{
+	EMPTY = 0,
+	WALL,
+	PLAYER,
+	ENEMY
+};
+
+enum eDirection
+{
 	STOP = 0,
 	LEFT,
 	RIGHT,

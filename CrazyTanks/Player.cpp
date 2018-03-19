@@ -2,7 +2,8 @@
 
 #include "Player.h"
 
-Player::Player() {
+Player::Player()
+{
 	pPlayer.x = 0;
 	pPlayer.y = 0;
 
@@ -11,7 +12,8 @@ Player::Player() {
 	life = 3;
 }
 
-Player::Player(int _x, int _y) {
+Player::Player(int _x, int _y)
+{
 	pPlayer.x = _x;
 	pPlayer.y = _y;
 

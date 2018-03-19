@@ -2,7 +2,8 @@
 
 #include "Structures.h"
 
-class Enemy {
+class Enemy
+{
 public:
 	Enemy();
 	Enemy(int _x, int _y);
