@@ -478,10 +478,17 @@ void Game::Logic()
 						map_[p.y][p.x - 1] = VBULLET;
 					}
 					else if (map_[p.y][p.x - 1] == PLAYER) {
-						gameOver_ = true;
+						if (player_->getLife() > 1) {
+							player_->decrementLife();
+						}
+						else {
+							gameOver_ = true;
+						}
+						
+						enemy_[i].eraseBullet(j);
 
 						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
-						map_[p.y][p.x - 1] = EMPTY;
+						//map_[p.y][p.x - 1] = EMPTY;
 					}
 					else if (map_[p.y][p.x - 1] == WALL) {
 						enemy_[i].eraseBullet(j);
@@ -499,10 +506,17 @@ void Game::Logic()
 						map_[p.y][p.x + 1] = VBULLET;
 					}
 					else if (map_[p.y][p.x + 1] == PLAYER) {
-						gameOver_ = true;
+						if (player_->getLife() > 1) {
+							player_->decrementLife();
+						}
+						else {
+							gameOver_ = true;
+						}
+
+						enemy_[i].eraseBullet(j);
 
 						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
-						map_[p.y][p.x + 1] = EMPTY;
+						//map_[p.y][p.x + 1] = EMPTY;
 					}
 					else if (map_[p.y][p.x + 1] == WALL) {
 						enemy_[i].eraseBullet(j);
@@ -520,10 +534,17 @@ void Game::Logic()
 						map_[p.y - 1][p.x] = HBULLET;
 					}
 					else if (map_[p.y - 1][p.x] == PLAYER) {
-						gameOver_ = true;
+						if (player_->getLife() > 1) {
+							player_->decrementLife();
+						}
+						else {
+							gameOver_ = true;
+						}
+
+						enemy_[i].eraseBullet(j);
 
 						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
-						map_[p.y - 1][p.x] = EMPTY;
+						//map_[p.y - 1][p.x] = EMPTY;
 					}
 					else if (map_[p.y - 1][p.x] == WALL) {
 						enemy_[i].eraseBullet(j);
@@ -541,10 +562,17 @@ void Game::Logic()
 						map_[p.y + 1][p.x] = HBULLET;
 					}
 					else if (map_[p.y + 1][p.x] == PLAYER) {
-						gameOver_ = true;
+						if (player_->getLife() > 1) {
+							player_->decrementLife();
+						}
+						else {
+							gameOver_ = true;
+						}
+
+						enemy_[i].eraseBullet(j);
 
 						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
-						map_[p.y + 1][p.x] = EMPTY;
+						//map_[p.y + 1][p.x] = EMPTY;
 					}
 					else if (map_[p.y + 1][p.x] == WALL) {
 						enemy_[i].eraseBullet(j);
