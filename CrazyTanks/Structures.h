@@ -11,7 +11,9 @@ enum eTags
 	EMPTY = 0,
 	WALL,
 	PLAYER,
-	ENEMY
+	ENEMY,
+	VBULLET,
+	HBULLET
 };
 
 enum eDirection

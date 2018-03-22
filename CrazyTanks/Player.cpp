@@ -2,22 +2,12 @@
 
 #include "Player.h"
 
-Player::Player()
+Player::Player() : Tank()
 {
-	pPlayer.x = 0;
-	pPlayer.y = 0;
-
-	dir = UP;
-
 	life = 3;
 }
 
-Player::Player(int _x, int _y)
+Player::Player(int x, int y) : Tank(x, y)
 {
-	pPlayer.x = _x;
-	pPlayer.y = _y;
-
-	dir = UP;
-
 	life = 3;
 }

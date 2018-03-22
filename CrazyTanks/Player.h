@@ -1,29 +1,19 @@
 #pragma once
 
-#include "Structures.h"
+//#include "structures.h"
+#include "tank.h" 
 
-class Player
+class Player : public Tank
 {
 public:
 	Player();
-	Player(int _x, int _y);
+	Player(int x, int y);
 
-	void setX(int _x) { pPlayer.x = _x; }
-	void setY(int _y) { pPlayer.y = _y; }
-	void setDir(eDirection _dir) { dir = _dir; }
-	void setMove(eDirection _move) { move = _move; }
 	void decrementLife() { life--; }
 
-	Point getPointPlayer() { return pPlayer; }
-	eDirection getDir() { return dir; }
-	eDirection getMove() { return move; }
-	unsigned getLife() { return life; }
+	unsigned getLife() const { return life; }
 
 private:
-	Point pPlayer;
-	eDirection dir;
-	eDirection move;
-
 	unsigned life;
 
 };

@@ -1,22 +1,12 @@
 #pragma once
 
-#include "Structures.h"
+//#include "structures.h"
+#include "tank.h"
 
-class Enemy
+class Enemy : public Tank
 {
 public:
-	Enemy();
-	Enemy(int _x, int _y);
-
-	void setX(int _x) { pEnemy.x = _x; }
-	void setY(int _y) { pEnemy.y = _y; }
-	void setDir(eDirection _dir) { dir = _dir; }
-
-	Point getPointEnemy() { return pEnemy; }
-	eDirection getDir() { return dir; }
-
-private:
-	Point pEnemy;
-	eDirection dir;
+	Enemy()             : Tank()     {}
+	Enemy(int x, int y) : Tank(x, y) {}
 
 };

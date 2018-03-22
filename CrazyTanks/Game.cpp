@@ -1,64 +1,57 @@
 ﻿#include "stdafx.h"
 
-#include "Game.h"
+#include "game.h"
 
 Game::Game()
 {
 	this->Setup();
 }
 
-Game::Game(int _width, int _height)
+Game::Game(int width, int height)
 {
-	this->Setup(_width, _height);
+	this->Setup(width, height);
 }
 
-void Game::Setup() {
-	gameOver = false;
-	score = 0;
-	width = 0;
-	height = 0;
+void Game::Setup()
+{
+	gameOver_ = false;
+	score_ = 0;
+	width_ = 0;
+	height_ = 0;
 
-	player = new Player();
+	player_ = new Player();
 }
 
-void Game::Setup(int _width, int _height)
+void Game::Setup(int width, int height)
 {
 	this->Setup();
 
-	width = _width;
-	height = _height;
+	width_  = width;
+	height_ = height;
+	map_    = vector<vector<int>>(height_ + 1, vector<int>(width_ + 1, 0));
 
-	srand(time(NULL));
-
-	// Fill map
-	for (size_t i = 0; i < height + 1; i++) {
-		map.push_back(vector<int>());
-
-		for (size_t j = 0; j < width + 1; j++) {
-			// Walls
-			if (i == 0 || i == height)
-				map[i].push_back(WALL);
-			else if (j == 0 || j == width)
-				map[i].push_back(WALL);
-			// Empty
-			else
-				map[i].push_back(EMPTY);
+	// Fill border
+	for (size_t i = 0; i < height_ + 1; i++) {
+		for (size_t j = 0; j < width_ + 1; j++) {
+			if      (i == 0 || i == height_) map_[i][j] = WALL;
+			else if (j == 0 || j == width_)  map_[i][j] = WALL;
+			else                             map_[i][j] = EMPTY;
 		}
 	}
 
 	// Spawn player
-	player->setX(_width - 2);
-	player->setY(_height - 2);
+	player_->setX(width_ - 2);
+	player_->setY(height_ - 2);
 
-	map[player->getPointPlayer().y][player->getPointPlayer().x] = PLAYER;
+	map_[player_->getPosition().y][player_->getPosition().x] = PLAYER;
 
 	// Spawn enemy
-	int numberOfEnemy = rand() % 5 + 2;
+	int numberOfEnemy = getRandomNumber(5, 7);
 
 	spawnEnemy(numberOfEnemy);
 
 	// Spawn walls
-	int numberOfWalls = rand() % 3 + 2;
+	int numberOfWalls = getRandomNumber(3, 5);
 
 	spawnWalls(numberOfWalls);
 }
@@ -68,7 +61,10 @@ void Game::Draw()
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 	system("cls");
 
-	srand(time(NULL));
+	// ╣ <-code: 185
+	// ╠ <-code: 204
+	// ╩ <-code: 202
+	// ╦ <-code: 203
 
 	//0 = Black		8 = Gray
 	//1 = Blue		9 = Light Blue
@@ -78,63 +74,51 @@ void Game::Draw()
 	//5 = Purple	d = Light Purple
 	//6 = Yellow	e = Light Yellow
 	//7 = White		f = Bright White
-	for (size_t i = 0; i < map.size(); i++) {
-		for (size_t j = 0; j < map[i].size(); j++) {
-			switch (map[i][j])
-			{
-			case EMPTY:
-				cout << ' ';
-				break;
-			case WALL:
-				SetConsoleTextAttribute(hConsole, 15);
-				cout << '#';
-				break;
-			case PLAYER:
-				SetConsoleTextAttribute(hConsole, 2);
+	for (size_t i = 0; i < map_.size(); i++) {
+		for (size_t j = 0; j < map_[i].size(); j++) {
+			switch (map_[i][j]) {
+				case EMPTY:
+					cout << ' ';
+					break;
 
-				switch (player->getDir()) {
-				case LEFT:
-					// ╣ <-code: 185
-					cout << (char)185;
+				case WALL:
+					SetConsoleTextAttribute(hConsole, 15);
+					cout << '#';
 					break;
-				case RIGHT:
-					// ╠ <-code: 204
-					cout << (char)204;
-					break;
-				case UP:
-					// ╩ <-code: 202 
-					cout << (char)202;
-					break;
-				case DOWN:
-					// ╦ <-code: 203
-					cout << (char)203;
-					break;
-				}
-				
-				break;
-			case ENEMY:
-				SetConsoleTextAttribute(hConsole, 4);
 
-				switch (getEnemyByCoordinates({ static_cast<int>(j), static_cast<int>(i) }).getDir()) {
-				case LEFT:
-					// ╣ <-code: 185
-					cout << (char)185;
-					break;
-				case RIGHT:
-					// ╠ <-code: 204
-					cout << (char)204;
-					break;
-				case UP:
-					// ╩ <-code: 202 
-					cout << (char)202;
-					break;
-				case DOWN:
-					// ╦ <-code: 203
-					cout << (char)203;
-					break;
-				}
+				case PLAYER:
+					SetConsoleTextAttribute(hConsole, 2);
 
-				break;
+					switch (player_->getDir()) {
+						case LEFT: cout << (char)185; break;
+						case RIGHT: cout << (char)204; break;
+						case UP: cout << (char)202; break;
+						case DOWN: cout << (char)203; break;
+					}
+					break;
+
+				case ENEMY:
+					SetConsoleTextAttribute(hConsole, 4);
+
+					switch (getEnemyByCoordinates({ static_cast<int>(j), static_cast<int>(i) }).getDir()) {
+						case LEFT : cout << (char)185; break;
+						case RIGHT: cout << (char)204; break;
+						case UP   : cout << (char)202; break;
+						case DOWN : cout << (char)203; break;
+					}
+					break;
+
+				case VBULLET:
+					SetConsoleTextAttribute(hConsole, 6);
+
+					cout << '-';
+					break;
+
+				case HBULLET:
+					SetConsoleTextAttribute(hConsole, 6);
+
+					cout << '|';
+					break;
 			}
 		}
 		
@@ -142,8 +126,8 @@ void Game::Draw()
 	}
 
 	SetConsoleTextAttribute(hConsole, 7);
-	cout << "Score: " << score << endl;
-	cout << "Life: " << player->getLife() << endl;
+	cout << "Score: " << score_ << endl;
+	cout << "Life: " << player_->getLife() << endl;
 	cout << "Time: " << clock() / 1000.0 << endl;
 }
 
@@ -157,84 +141,182 @@ void Game::Input()
 		// SPACE:  32
 
 		char c = _getch();
-
 		switch(c) {
-		case -32:
+			case -32:
+				c = _getch();
+				switch (c) {
+					case 75:
+						player_->setDir(LEFT);
+						player_->setMove(LEFT);
+						break;
 
-			c = _getch();
+					case 77:
+						player_->setDir(RIGHT);
+						player_->setMove(RIGHT);
+						break;
 
-			switch (c)
-			{
-			case 75:
-				player->setDir(LEFT);
-				player->setMove(LEFT);
-				break;
-			case 77:
-				player->setDir(RIGHT);
-				player->setMove(RIGHT);
-				break;
-			case 72:
-				player->setDir(UP);
-				player->setMove(UP);
-				break;
-			case 80:
-				player->setDir(DOWN);
-				player->setMove(DOWN);
-				break;
-			}
-			break;
-		case 32:
+					case 72:
+						player_->setDir(UP);
+						player_->setMove(UP);
+						break;
 
-			break;
-		case 'x':
-			gameOver = true;
-			break;
+					case 80:
+						player_->setDir(DOWN);
+						player_->setMove(DOWN);
+						break;
+				}
+				break;
+
+			case 32:
+				Point p = player_->getPosition();
+				player_->shoot(p.x, p.y, player_->getDir());
+				break;
+
+			case 'x':
+				gameOver_ = true;
+				break;
 		}
 	}
 	else {
-		player->setMove(STOP);
+		player_->setMove(STOP);
 	}
 }
 
 void Game::Logic()
 {
 	// Player logic
+	Point p = player_->getPosition();
 
-	Point p = player->getPointPlayer();
+	if (player_->getMove() != STOP) {
+		switch (player_->getMove()) {
+			case LEFT:
+				if (map_[p.y][p.x - 1] == EMPTY) {
+					player_->setX(p.x - 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y][p.x - 1] = PLAYER;
+				}
+				break;
 
-	if (player->getMove() != STOP) {
-		switch (player->getMove())
-		{
-		case LEFT:
-			if (map[p.y][p.x - 1] == EMPTY) {
-				player->setX(p.x - 1);
-				map[p.y][p.x] = EMPTY;
-				map[p.y][p.x - 1] = PLAYER;
+			case RIGHT:
+				if (map_[p.y][p.x + 1] == EMPTY) {
+					player_->setX(p.x + 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y][p.x + 1] = PLAYER;
+				}
+				break;
+
+			case UP:
+				if (map_[p.y - 1][p.x] == EMPTY) {
+					player_->setY(p.y - 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y - 1][p.x] = PLAYER;
+				}
+				break;
+
+			case DOWN:
+				if (map_[p.y + 1][p.x] == EMPTY) {
+					player_->setY(p.y + 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y + 1][p.x] = PLAYER;
+				}
+				break;
+		}
+	}
+
+	size_t size = player_->getSizeBullets();
+	if (size > 0) {
+		for (size_t i = 0; i < size; i++) {
+			Bullet bullet = player_->getBullet(i);
+			Point p = bullet.getPosition();
+			switch (bullet.getDir()) {
+				case LEFT:
+					if (map_[p.y][p.x - 1] == EMPTY) {
+						bullet.setX(p.x - 1);
+						player_->setBullet(i, bullet);
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x - 1] = VBULLET;
+					}
+					else if (map_[p.y][p.x - 1] == ENEMY) {
+						player_->eraseBullet(i);
+						eraseEnemyByCoordinates({ p.y, p.x - 1 });
+						score_ += 10;
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x - 1] = EMPTY;
+					}
+					else if (map_[p.y][p.x - 1] == WALL) {
+						player_->eraseBullet(i);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case RIGHT:
+					if (map_[p.y][p.x + 1] == EMPTY) {
+						bullet.setX(p.x + 1);
+						player_->setBullet(i, bullet);
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x + 1] = VBULLET;
+					}
+					else if (map_[p.y][p.x + 1] == ENEMY) {
+						player_->eraseBullet(i);
+						eraseEnemyByCoordinates({ p.y, p.x + 1 });
+						score_ += 10;
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x + 1] = EMPTY;
+					}
+					else if (map_[p.y][p.x + 1] == WALL) {
+						player_->eraseBullet(i);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case UP:
+					if (map_[p.y - 1][p.x] == EMPTY) {
+						bullet.setY(p.y - 1);
+						player_->setBullet(i, bullet);
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y - 1][p.x] = HBULLET;
+					}
+					else if (map_[p.y - 1][p.x] == ENEMY) {
+						player_->eraseBullet(i);
+						eraseEnemyByCoordinates({ p.y - 1, p.x });
+						score_ += 10;
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y - 1][p.x] = EMPTY;
+					}
+					else if (map_[p.y - 1][p.x] == WALL) {
+						player_->eraseBullet(i);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case DOWN:
+					if (map_[p.y + 1][p.x] == EMPTY) {
+						bullet.setY(p.y + 1);
+						player_->setBullet(i, bullet);
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y + 1][p.x] = HBULLET;
+					}
+					else if (map_[p.y + 1][p.x] == ENEMY) {
+						player_->eraseBullet(i);
+						eraseEnemyByCoordinates({ p.y + 1, p.x });
+						score_ += 10;
+
+						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
+						map_[p.y + 1][p.x] = EMPTY;
+					}
+					else if (map_[p.y + 1][p.x] == WALL) {
+						player_->eraseBullet(i);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
 			}
-			break;
-		case RIGHT:
-			if (map[p.y][p.x + 1] == EMPTY) {
-				player->setX(p.x + 1);
-				map[p.y][p.x] = EMPTY;
-				map[p.y][p.x + 1] = PLAYER;
-			}
-			break;
-		case UP:
-			if (map[p.y - 1][p.x] == EMPTY) {
-				player->setY(p.y - 1);
-				map[p.y][p.x] = EMPTY;
-				map[p.y - 1][p.x] = PLAYER;
-			}
-			break;
-		case DOWN:
-			if (map[p.y + 1][p.x] == EMPTY) {
-				player->setY(p.y + 1);
-				map[p.y][p.x] = EMPTY;
-				map[p.y + 1][p.x] = PLAYER;
-			}
-			break;
-		default:
-			break;
 		}
 	}
 }
@@ -248,9 +330,9 @@ void Game::drawLine(Point p1, Point p2)
 	
 	int error = deltaX - deltaY;
 
-	map[p2.y][p2.x] = WALL;
+	map_[p2.y][p2.x] = WALL;
 	while (p1.x != p2.x || p1.y != p2.y) {
-		map[p1.y][p1.x] = WALL;
+		map_[p1.y][p1.x] = WALL;
 		const int error2 = error * 2;
 
 		if (error2 > -deltaY) {
@@ -268,13 +350,13 @@ void Game::spawnEnemy(int numberOfEnemy)
 {
 	for (size_t i = 0; i < numberOfEnemy; i++) {
 		bool check = false;
-
 		while (!check) {
-			int x = rand() % (width - 2) + 1, y = rand() % (height - 5) + 1;
+			int x = getRandomNumber(1, width_ - 2);
+			int	y = getRandomNumber(1, height_ - 5);
 
 			if (findOnMap({ x, y }, 2, ENEMY).x == -1) {
-				enemy.push_back(Enemy(x, y));
-				map[y][x] = ENEMY;
+				enemy_.push_back(Enemy(x, y));
+				map_[y][x] = ENEMY;
 				check = true;
 			}
 		}
@@ -285,33 +367,41 @@ void Game::spawnWalls(int numberOfWalls)
 {
 	for (size_t i = 0; i < numberOfWalls; i++) {
 		bool check = false;
-
 		while (!check) {
-			Point start = { rand() % (width - 2) + 1, rand() % (height - 2) + 1 };
-			Point end = { 0, 0 };
+			Point start = { getRandomNumber(1, width_ - 2), getRandomNumber(1, height_ - 2) };
+			Point end   = { 0, 0 };
 
-			if (map[start.y][start.x] != EMPTY)
-				break;
-			if (findOnMap({ start.x, start.y }, 1, PLAYER).x != -1 && findOnMap({ start.x, start.y }, 1, ENEMY).x != -1)
-				break;
-			if (findOnMap({ start.x, start.y }, 1, WALL).x != -1)
-				break;
+			bool isPlayerNearby = findOnMap({ start.x, start.y }, 1, PLAYER).x != -1;
+			bool isEnemyNearby  = findOnMap({ start.x, start.y }, 1, ENEMY).x  != -1;
+			bool isWallNearby   = findOnMap({ start.x, start.y }, 1, WALL).x   != -1;
+			if (map_[start.y][start.x] != EMPTY) break;
+			if (isPlayerNearby && isEnemyNearby) break;
+			if (isWallNearby)                    break;
 
-			if (rand() % 2)
-				end = { start.x, rand() % (height - 2) + 1 };
-			else
-				end = { rand() % (width - 2) + 1, start.y };
+			if (getRandomNumber(0, 1)) end = { start.x, getRandomNumber(1, height_ - 2) };
+			else                       end = { getRandomNumber(1, width_ - 2), start.y };
 
-			if (map[end.y][end.x] != EMPTY)
-				break;
-			if (findOnMap({ end.x, end.y }, 1, PLAYER).x != -1 && findOnMap({ end.x, end.y }, 1, ENEMY).x != -1)
-				break;
-			if (findOnMap({ end.x, end.y }, 1, WALL).x != -1)
-				break;
+			isPlayerNearby = findOnMap({ end.x, end.y }, 1, PLAYER).x != -1;
+			isEnemyNearby  = findOnMap({ end.x, end.y }, 1, ENEMY).x  != -1;
+			isWallNearby   = findOnMap({ end.x, end.y }, 1, WALL).x   != -1;
+			if (map_[end.y][end.x] != EMPTY)     break;
+			if (isPlayerNearby && isEnemyNearby) break;
+			if (isWallNearby)                    break;
 
 			drawLine(start, end);
 
 			check = true;
+		}
+	}
+}
+
+void Game::eraseEnemyByCoordinates(Point p)
+{
+	for (auto it = enemy_.begin(); it != enemy_.end(); it++) {
+		bool isEnemyOnPoint = it->getPosition().x == p.x && it->getPosition().y == p.y;
+		if (isEnemyOnPoint) {
+			enemy_.erase(it);
+			return;
 		}
 	}
 }
@@ -321,17 +411,13 @@ Point Game::findOnMap(Point center, int radius, int i)
 	Point p = { center.x - radius, center.y - radius };
 	Point f = { -1, -1 };
 
-	if (p.x < 1)
-		p.x = 1;
-	if (p.y < 1)
-		p.y = 1;
+	if (p.x < 1) p.x = 1;
+	if (p.y < 1) p.y = 1;
 
 	for (; p.y < center.y + radius; p.y++) {
 		for (int j = p.x; j < center.x + radius; j++) {
-			if (map[p.y][j] == i)
-				return f = { j, p.y };
+			if (map_[p.y][j] == i) return f = { j, p.y };
 		}
-			
 	}	
 
 	return f;
@@ -339,22 +425,30 @@ Point Game::findOnMap(Point center, int radius, int i)
 
 Enemy Game::getEnemyByCoordinates(Point p)
 {
-	for (size_t i = 0; i < enemy.size(); i++) {
-		if (enemy[i].getPointEnemy().x == p.x && enemy[i].getPointEnemy().y == p.y) {
-			return enemy[i];
-		}
+	for (size_t i = 0; i < enemy_.size(); i++) {
+		bool isEnemyOnPoint = enemy_[i].getPosition().x == p.x && enemy_[i].getPosition().y == p.y;
+		if (isEnemyOnPoint) return enemy_[i];
 	}
 
 	return Enemy(-1, -1);
 }
 
+int Game::getRandomNumber(int start, int stop)
+{
+	random_device rd;
+	mt19937 mt(rd());
+	uniform_int_distribution<int> dist(start, stop);
+
+	return dist(mt);
+}
+
 Game::~Game ()
 {
-	delete player;
+	delete player_;
 
-	for (size_t i = 0; i < map.size(); i++)
-		map[i].clear();
+	for (size_t i = 0; i < map_.size(); i++)
+		map_[i].clear();
 
-	map.clear();
-	enemy.clear();
+	map_.clear();
+	enemy_.clear();
 }
