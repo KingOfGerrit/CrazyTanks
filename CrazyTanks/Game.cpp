@@ -43,7 +43,7 @@ void Game::Setup(int width, int height)
 	player_->setX(width_ - 2);
 	player_->setY(height_ - 2);
 
-	map_[player_->getPosition().y][player_->getPosition().x] = PLAYER;
+	map_[height_ - 2][width_ - 2] = PLAYER;
 
 	// Spawn enemy
 	int numberOfEnemy = getRandomNumber(5, 7);
@@ -110,13 +110,11 @@ void Game::Draw()
 
 				case VBULLET:
 					SetConsoleTextAttribute(hConsole, 6);
-
 					cout << '-';
 					break;
 
 				case HBULLET:
 					SetConsoleTextAttribute(hConsole, 6);
-
 					cout << '|';
 					break;
 			}
@@ -223,14 +221,17 @@ void Game::Logic()
 		}
 	}
 
+	// Player bullets
 	size_t size = player_->getSizeBullets();
 	if (size > 0) {
 		for (size_t i = 0; i < size; i++) {
 			Bullet bullet = player_->getBullet(i);
 			Point p = bullet.getPosition();
+			bool isBullet = false;
 			switch (bullet.getDir()) {
 				case LEFT:
-					if (map_[p.y][p.x - 1] == EMPTY) {
+					isBullet = map_[p.y][p.x - 1] == HBULLET || map_[p.y][p.x - 1] == VBULLET;
+					if (map_[p.y][p.x - 1] == EMPTY || isBullet) {
 						bullet.setX(p.x - 1);
 						player_->setBullet(i, bullet);
 
@@ -239,7 +240,7 @@ void Game::Logic()
 					}
 					else if (map_[p.y][p.x - 1] == ENEMY) {
 						player_->eraseBullet(i);
-						eraseEnemyByCoordinates({ p.y, p.x - 1 });
+						eraseEnemyByCoordinates({ p.x - 1, p.y });
 						score_ += 10;
 
 						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
@@ -252,7 +253,8 @@ void Game::Logic()
 					break;
 
 				case RIGHT:
-					if (map_[p.y][p.x + 1] == EMPTY) {
+					isBullet = map_[p.y][p.x + 1] == HBULLET || map_[p.y][p.x + 1] == VBULLET;
+					if (map_[p.y][p.x + 1] == EMPTY || isBullet) {
 						bullet.setX(p.x + 1);
 						player_->setBullet(i, bullet);
 
@@ -261,7 +263,7 @@ void Game::Logic()
 					}
 					else if (map_[p.y][p.x + 1] == ENEMY) {
 						player_->eraseBullet(i);
-						eraseEnemyByCoordinates({ p.y, p.x + 1 });
+						eraseEnemyByCoordinates({ p.x + 1, p.y });
 						score_ += 10;
 
 						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
@@ -274,7 +276,8 @@ void Game::Logic()
 					break;
 
 				case UP:
-					if (map_[p.y - 1][p.x] == EMPTY) {
+					isBullet = map_[p.y - 1][p.x] == HBULLET || map_[p.y - 1][p.x] == VBULLET;
+					if (map_[p.y - 1][p.x] == EMPTY || isBullet) {
 						bullet.setY(p.y - 1);
 						player_->setBullet(i, bullet);
 
@@ -283,7 +286,7 @@ void Game::Logic()
 					}
 					else if (map_[p.y - 1][p.x] == ENEMY) {
 						player_->eraseBullet(i);
-						eraseEnemyByCoordinates({ p.y - 1, p.x });
+						eraseEnemyByCoordinates({ p.x, p.y - 1 });
 						score_ += 10;
 
 						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
@@ -296,7 +299,8 @@ void Game::Logic()
 					break;
 
 				case DOWN:
-					if (map_[p.y + 1][p.x] == EMPTY) {
+					isBullet = map_[p.y + 1][p.x] == HBULLET || map_[p.y + 1][p.x] == VBULLET;
+					if (map_[p.y + 1][p.x] == EMPTY || isBullet) {
 						bullet.setY(p.y + 1);
 						player_->setBullet(i, bullet);
 
@@ -305,7 +309,7 @@ void Game::Logic()
 					}
 					else if (map_[p.y + 1][p.x] == ENEMY) {
 						player_->eraseBullet(i);
-						eraseEnemyByCoordinates({ p.y + 1, p.x });
+						eraseEnemyByCoordinates({ p.x, p.y + 1 });
 						score_ += 10;
 
 						if (map_[p.y][p.x] != PLAYER) map_[p.y][p.x] = EMPTY;
@@ -316,6 +320,238 @@ void Game::Logic()
 						map_[p.y][p.x] = EMPTY;
 					}
 					break;
+			}
+		}
+	}
+
+	// Enemy logic
+	for (size_t i = 0; i < enemy_.size(); i++) {
+		p = enemy_[i].getPosition();
+		// Find player
+		if (getRandomNumber(1, 10) > 9) {
+			bool isPlayer = false;
+			// Check left
+			for (size_t j = p.x - 1; map_[p.y][j] != WALL; j--) {
+				if (map_[p.y][j] == PLAYER) {
+					if (enemy_[i].getDir() == LEFT) {
+						enemy_[i].shoot(p.x, p.y, LEFT);
+						isPlayer = true;
+						break;
+					}
+					else {
+						enemy_[i].setDir(LEFT);
+						enemy_[i].setMove(LEFT);
+						isPlayer = true;
+						break;
+					}
+				}
+			}
+
+			if (isPlayer) continue;
+
+			// Check right
+			for (size_t j = p.x + 1; map_[p.y][j] != WALL; j++) {
+				if (map_[p.y][j] == PLAYER) {
+					if (enemy_[i].getDir() == RIGHT) {
+						enemy_[i].shoot(p.x, p.y, RIGHT);
+						isPlayer = true;
+						break;
+					}
+					else {
+						enemy_[i].setDir(RIGHT);
+						enemy_[i].setMove(RIGHT);
+						isPlayer = true;
+						break;
+					}
+				}
+			}
+
+			if (isPlayer) continue;
+
+			// Check up
+			for (size_t j = p.y - 1; map_[j][p.x] != WALL; j--) {
+				if (map_[j][p.x] == PLAYER) {
+					if (enemy_[i].getDir() == UP) {
+						enemy_[i].shoot(p.x, p.y, UP);
+						isPlayer = true;
+						break;
+					}
+					else {
+						enemy_[i].setDir(UP);
+						enemy_[i].setMove(UP);
+						isPlayer = true;
+						break;
+					}
+				}
+			}
+
+			if (isPlayer) continue;
+
+			// Check down
+			for (size_t j = p.y + 1; map_[j][p.x] != WALL; j++) {
+				if (map_[j][p.x] == PLAYER) {
+					if (enemy_[i].getDir() == DOWN) {
+						enemy_[i].shoot(p.x, p.y, DOWN);
+						isPlayer = true;
+						break;
+					}
+					else {
+						enemy_[i].setDir(DOWN);
+						enemy_[i].setMove(DOWN);
+						isPlayer = true;
+						break;
+					}
+				}
+			}
+
+			if (!isPlayer) {
+				if (enemy_[i].getMove() == STOP) {
+					eDirection newDirection = static_cast<eDirection>(getRandomNumber(1, 4));
+					enemy_[i].setDir(newDirection);
+					enemy_[i].setMove(newDirection);
+				}
+				else {
+					// 20%
+					if (getRandomNumber(1, 10) > 8) {
+						eDirection newDirection = static_cast<eDirection>(getRandomNumber(1, 4));
+						enemy_[i].setDir(newDirection);
+						enemy_[i].setMove(newDirection);
+					}
+				}
+			}
+		}
+		else {
+			enemy_[i].setMove(STOP);
+		}
+
+		// Move enemy
+		if (enemy_[i].getMove() != STOP) {
+			switch (enemy_[i].getMove()) {
+			case LEFT:
+				if (map_[p.y][p.x - 1] == EMPTY) {
+					enemy_[i].setX(p.x - 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y][p.x - 1] = ENEMY;
+				}
+				break;
+
+			case RIGHT:
+				if (map_[p.y][p.x + 1] == EMPTY) {
+					enemy_[i].setX(p.x + 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y][p.x + 1] = ENEMY;
+				}
+				break;
+
+			case UP:
+				if (map_[p.y - 1][p.x] == EMPTY) {
+					enemy_[i].setY(p.y - 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y - 1][p.x] = ENEMY;
+				}
+				break;
+
+			case DOWN:
+				if (map_[p.y + 1][p.x] == EMPTY) {
+					enemy_[i].setY(p.y + 1);
+					map_[p.y][p.x] = EMPTY;
+					map_[p.y + 1][p.x] = ENEMY;
+				}
+				break;
+			}
+		}
+
+		size_t size = enemy_[i].getSizeBullets();
+		if (size > 0) {
+			for (size_t j = 0; j < size; j++) {
+				Bullet bullet = enemy_[i].getBullet(j);
+				Point p = bullet.getPosition();
+				bool isBullet = false;
+				switch (bullet.getDir()) {
+				case LEFT:
+					isBullet = map_[p.y][p.x - 1] == HBULLET || map_[p.y][p.x - 1] == VBULLET;
+					if (map_[p.y][p.x - 1] == EMPTY || isBullet) {
+						bullet.setX(p.x - 1);
+						enemy_[i].setBullet(j, bullet);
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x - 1] = VBULLET;
+					}
+					else if (map_[p.y][p.x - 1] == PLAYER) {
+						gameOver_ = true;
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x - 1] = EMPTY;
+					}
+					else if (map_[p.y][p.x - 1] == WALL) {
+						enemy_[i].eraseBullet(j);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case RIGHT:
+					isBullet = map_[p.y][p.x + 1] == HBULLET || map_[p.y][p.x + 1] == VBULLET;
+					if (map_[p.y][p.x + 1] == EMPTY || isBullet) {
+						bullet.setX(p.x + 1);
+						enemy_[i].setBullet(j, bullet);
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x + 1] = VBULLET;
+					}
+					else if (map_[p.y][p.x + 1] == PLAYER) {
+						gameOver_ = true;
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y][p.x + 1] = EMPTY;
+					}
+					else if (map_[p.y][p.x + 1] == WALL) {
+						enemy_[i].eraseBullet(j);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case UP:
+					isBullet = map_[p.y - 1][p.x] == HBULLET || map_[p.y - 1][p.x] == VBULLET;
+					if (map_[p.y - 1][p.x] == EMPTY || isBullet) {
+						bullet.setY(p.y - 1);
+						enemy_[i].setBullet(j, bullet);
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y - 1][p.x] = HBULLET;
+					}
+					else if (map_[p.y - 1][p.x] == PLAYER) {
+						gameOver_ = true;
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y - 1][p.x] = EMPTY;
+					}
+					else if (map_[p.y - 1][p.x] == WALL) {
+						enemy_[i].eraseBullet(j);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+
+				case DOWN:
+					isBullet = map_[p.y + 1][p.x] == HBULLET || map_[p.y + 1][p.x] == VBULLET;
+					if (map_[p.y + 1][p.x] == EMPTY || isBullet) {
+						bullet.setY(p.y + 1);
+						enemy_[i].setBullet(j, bullet);
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y + 1][p.x] = HBULLET;
+					}
+					else if (map_[p.y + 1][p.x] == PLAYER) {
+						gameOver_ = true;
+
+						if (map_[p.y][p.x] != ENEMY) map_[p.y][p.x] = EMPTY;
+						map_[p.y + 1][p.x] = EMPTY;
+					}
+					else if (map_[p.y + 1][p.x] == WALL) {
+						enemy_[i].eraseBullet(j);
+						map_[p.y][p.x] = EMPTY;
+					}
+					break;
+				}
 			}
 		}
 	}
@@ -400,6 +636,11 @@ void Game::eraseEnemyByCoordinates(Point p)
 	for (auto it = enemy_.begin(); it != enemy_.end(); it++) {
 		bool isEnemyOnPoint = it->getPosition().x == p.x && it->getPosition().y == p.y;
 		if (isEnemyOnPoint) {
+			for (size_t i = 0; i < it->getSizeBullets(); i++) {
+				Point p = it->getBullet(i).getPosition();
+				map_[p.y][p.x] = EMPTY;
+				it->eraseBullet(i);
+			}
 			enemy_.erase(it);
 			return;
 		}

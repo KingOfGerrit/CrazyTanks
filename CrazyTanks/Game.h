@@ -9,6 +9,7 @@
 #include <ctime>
 #include <cstdlib>
 #include <random>
+#include <exception>
 
 #include "structures.h"
 
@@ -19,6 +20,7 @@
 using namespace std;
 
 //TODO: разобраться с очисткой памяти и указателями
+//gameOver_ переименовать в isGameOver_
 class Game
 {
 public:

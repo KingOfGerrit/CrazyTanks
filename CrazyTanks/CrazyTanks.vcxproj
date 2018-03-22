@@ -163,7 +163,6 @@
   <ItemGroup>
     <ClCompile Include="bullet.cpp" />
     <ClCompile Include="CrazyTanks.cpp" />
-    <ClCompile Include="enemy.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="stdafx.cpp">
